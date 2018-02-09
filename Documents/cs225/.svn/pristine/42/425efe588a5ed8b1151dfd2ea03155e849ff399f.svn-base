@@ -1,0 +1,86 @@
+/* Your code here! */
+#include "maze.h"
+#include <cstdlib>
+
+SquareMaze::SquareMaze() {
+}
+
+void SquareMaze::makeMaze (int width, int height) {
+  width_ = width;
+  height_ = height;
+  size_ = width * height;
+
+  // create DisjointSets
+  DisjointSets cells = DisjointSets();
+  cells.addelements(size_);
+  // create walls
+  rightWalls = vector<bool> rw(size_, true);
+  downWalls = vector<bool> dw(size_, true);
+
+  int i = 0;
+  // break walls
+  while (i < size_ - 1) {
+    // pick a cell and dir randomly
+    int cellIdx = rand() % size_;
+    int rowIdx = cellIdx / width_;
+    int colIdx = cellIdx % width_;
+    // 0 -- right; 1 -- down;
+    int breadDir = rand() % 2;
+
+    // break right walls
+    if (rightWalls[cellIdx] == true && cells.find(cellIdx) != cells.find(cellIdx+1)
+      && colIdx != width_ -1 && breadDir == 0) {
+      rightWalls[cellIdx] = false;
+      cells.setunion(cellIdx, cellIdx+1);
+      i++;
+    }
+    // break down walls
+    if (downWalls[cellIdx] == true && cells.find(cellIdx) != cells.find(cellIdx+width_)
+      && rowIdx != height_ -1 && breakDir == 1) {
+        downWalls[cellIdx] = false;
+        cells.setunion(cellIdx, cellIdx+width_);
+        i++;
+      }
+  }
+}
+
+
+bool SquareMaze::canTravel (int x, int y, int dir) const {
+  // right
+  if (dir == 0) {
+    if (x == width_ -1) return false;
+    return (rightWalls[y * width_ + x] == false);
+  }
+  // down
+  if (dir == 1) {
+    if (y == height_ -1) return false;
+    return (downWalls[y * width_ + x] == false);
+  }
+  // left
+  if (dir == 2) {
+    if (x == 0) return false;
+    return (rightWalls[y * width_ + x-1] == false);
+  }
+  // up
+  if (dir == 3) {
+    if (y == 0) return false;
+    return (downWalls[y * width_ + x - width_] == false);
+  }
+}
+
+
+void SquareMaze::setWall (int x, int y, int dir, bool exists) {
+  // right
+  if (dir == 0 && x != width_ -1) {
+    rightWalls[y * width_ + x] = exists;
+  }
+  // down
+  if (dir == 1 && y != height_ -1) {
+    downWalls[y * width_ + x] = exists;
+  }
+}
+
+
+vector< int > SquareMaze::solveMaze () {
+
+}

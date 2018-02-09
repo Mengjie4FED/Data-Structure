@@ -1,0 +1,181 @@
+/**
+ * @file NimLearner.cpp
+ * CS 225 - Fall 2017
+ */
+
+#include "NimLearner.h"
+#include<string>
+
+using namespace std;
+
+
+/**
+ * Constructor to create a game of Nim with `startingTokens` starting tokens.
+ *
+ * This function creates a graph, `g_` representing all of the states of a
+ * game of Nim with vertex labels "p#-X", where:
+ * - # is the current player's turn; p1 for Player 1, p2 for Player2
+ * - X is the tokens remaining at the start of a player's turn
+ *
+ * For example:
+ *   "p1-4" is Player 1's turn with four (4) tokens remaining
+ *   "p2-8" is Player 2's turn with eight (8) tokens remaining
+ *
+ * All legal moves between states are created as edges with initial weights
+ * of 0.
+ *
+ * @param startingTokens The number of starting tokens in the game of Nim.
+ */
+NimLearner::NimLearner(unsigned startingTokens) : g_(true) {
+  // insert vertices
+  for (unsigned i = 0; i <= startingTokens; i++) {
+    string label1 = "p1-" + to_string(i);
+    string label2 = "p2-" + to_string(i);
+    g_.insertVertex(label1);
+    g_.insertVertex(label2);
+  }
+
+  // insert edges
+  for (unsigned i = 0; i < startingTokens; i++) {
+    if (i == startingTokens - 1) {
+      string labelDes1 = "p1-" + to_string(i);
+      string labelDes2 = "p2-" + to_string(i);
+      string labelSor11 = "p1-" + to_string(i + 1);
+      string labelSor21 = "p2-" + to_string(i + 1);
+
+      Vertex des3 = g_.getVertexByLabel(labelDes1);
+      Vertex sor5 = g_.getVertexByLabel(labelSor21);
+      g_.insertEdge(sor5, des3);
+      g_.setEdgeWeight(sor5, des3, 0);
+
+      Vertex des4 = g_.getVertexByLabel(labelDes2);
+      Vertex sor6 = g_.getVertexByLabel(labelSor11);
+      g_.insertEdge(sor6, des4);
+      g_.setEdgeWeight(sor6, des4, 0);
+
+    } else{
+      string labelDes1 = "p1-" + to_string(i);
+      string labelDes2 = "p2-" + to_string(i);
+      string labelSor11 = "p1-" + to_string(i + 1);
+      string labelSor21 = "p2-" + to_string(i + 1);
+      string labelSor12 = "p1-" + to_string(i + 2);
+      string labelSor22 = "p2-" + to_string(i + 2);
+
+      Vertex des1 = g_.getVertexByLabel(labelDes1);
+      Vertex sor1 = g_.getVertexByLabel(labelSor21);
+      Vertex sor2 = g_.getVertexByLabel(labelSor22);
+      g_.insertEdge(sor1, des1);
+      g_.setEdgeWeight(sor1, des1, 0);
+      g_.insertEdge(sor2, des1);
+      g_.setEdgeWeight(sor2, des1, 0);
+
+      Vertex des2 = g_.getVertexByLabel(labelDes2);
+      Vertex sor3 = g_.getVertexByLabel(labelSor11);
+      Vertex sor4 = g_.getVertexByLabel(labelSor12);
+      g_.insertEdge(sor3, des2);
+      g_.setEdgeWeight(sor3, des2, 0);
+      g_.insertEdge(sor4, des2);
+      g_.setEdgeWeight(sor4, des2, 0);
+    }
+
+
+  }
+  string start = "p1-" + to_string(startingTokens);
+  startingVertex_ = g_.getVertexByLabel(start);
+}
+
+/**
+ * Plays a random game of Nim, returning the path through the state graph
+ * as a vector of `Edge` classes.  The `origin` of the first `Edge` must be
+ * the vertex with the label "p1-#", where # is the number of starting
+ * tokens.  (For example, in a 10 token game, result[0].origin must be the
+ * vertex "p1-10".)
+ *
+ * @returns A random path through the state space graph.
+ */
+std::vector<Edge> NimLearner::playRandomGame() const {
+  vector<Edge> path;
+
+  size_t numStep = g_.getVertices().size() / 2 -1;
+  size_t player = 1;
+  int i = int(numStep);
+
+  while(i > 0) {
+    int step = rand() % 2 + 1;  // 1 or 2
+    if (i - step >= 0) {
+      if (player % 2 == 1) {
+        string sor = "p1-" + to_string(i);
+        string des = "p2-" + to_string(i - step);
+        Vertex sorV = g_.getVertexByLabel(sor);
+        Vertex desV = g_.getVertexByLabel(des);
+        Edge edgeStep = g_.getEdge(sorV, desV);
+        path.push_back(edgeStep);
+        i = i - step;
+        player += 1;
+      }
+      else {
+        string sor1 = "p2-" + to_string(i);
+        string des1 = "p1-" + to_string(i - step);
+        Vertex sorV1 = g_.getVertexByLabel(sor1);
+        Vertex desV1 = g_.getVertexByLabel(des1);
+        Edge edgeStep1 = g_.getEdge(sorV1, desV1);
+        path.push_back(edgeStep1);
+        i = i - step;
+        player += 1;
+      }
+    }
+
+    if (i == 1) {
+      if (player % 2 == 1){
+        string sor0 = "p1-" + to_string(1);
+        string des0 = "p2-" + to_string(0);
+        Vertex sorV0 = g_.getVertexByLabel(sor0);
+        Vertex desV0 = g_.getVertexByLabel(des0);
+        Edge edgeStep0 = g_.getEdge(sorV0, desV0);
+        path.push_back(edgeStep0);
+        i = 0;
+      }
+      else {
+        string sor01 = "p2-" + to_string(1);
+        string des01 = "p1-" + to_string(0);
+        Vertex sorV01 = g_.getVertexByLabel(sor01);
+        Vertex desV01 = g_.getVertexByLabel(des01);
+        Edge edgeStep01 = g_.getEdge(sorV01, desV01);
+        path.push_back(edgeStep01);
+        i = 0;
+      }
+    }
+  }
+  return path;
+}
+
+
+/*
+ * Updates the edge weights on the graph based on a path through the state
+ * tree.
+ *
+ * If the `path` has Player 1 winning (eg: the last vertex in the path goes
+ * to Player 2 with no tokens remaining, or "p2-0", meaning that Player 1
+ * took the last token), then all choices made by Player 1 (edges where
+ * Player 1 is the source vertex) are rewarded by increasing the edge weight
+ * by 1 and all choices made by Player 2 are punished by changing the edge
+ * weight by -1.
+ *
+ * Likewise, if the `path` has Player 2 winning, Player 2 choices are
+ * rewarded and Player 1 choices are punished.
+ *
+ * @param path A path through the a game of Nim to learn.
+ */
+void NimLearner::updateEdgeWeights(const std::vector<Edge> & path) {
+
+}
+
+
+/**
+ * Returns a constant reference to the state space graph.
+ *
+ * @returns A constant reference to the state space graph.
+ */
+const Graph & NimLearner::getGraph() const {
+  return g_;
+}
